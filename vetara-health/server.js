@@ -23,6 +23,10 @@ app.use('/api/records', require('./src/routes/records'));
 app.use('/api/providers', require('./src/routes/providers'));
 app.use('/api/appointments', require('./src/routes/appointments'));
 app.use('/api/reminders', require('./src/routes/reminders'));
+app.use('/api/insurance', require('./src/routes/insurance'));
+app.use('/api/posts', require('./src/routes/posts'));
+app.use('/api/slots', require('./src/routes/slots'));
+app.use('/api/assistant', require('./src/routes/assistant'));
 
 // Static frontend
 app.use(express.static(path.join(__dirname, 'public')));

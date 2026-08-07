@@ -29,7 +29,14 @@ const I = (n, s = 18) => {
     back:'<path d="m14 6-6 6 6 6"/>',
     out:'<path d="M14 5h5v5M19 5l-8 8"/><path d="M19 14v5H5V5h5"/>',
     pill:'<rect x="3.5" y="9.5" width="17" height="7" rx="3.5" transform="rotate(-40 12 13)"/><path d="m9 9 5.5 5.5"/>',
-    trash:'<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/><path d="M10 11v5M14 11v5"/>'
+    trash:'<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/><path d="M10 11v5M14 11v5"/>',
+    brain:'<path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 3c0 .8.3 1.5.8 2A3 3 0 0 0 6 17a3 3 0 0 0 3 3c.8 0 1.5-.3 2-.8V4.8A3 3 0 0 0 9 4zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 3c0 .8-.3 1.5-.8 2A3 3 0 0 1 18 17a3 3 0 0 1-3 3c-.8 0-1.5-.3-2-.8V4.8A3 3 0 0 1 15 4z"/>',
+    mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    link:'<path d="M10 14a4.5 4.5 0 0 0 6.4.4l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.5 1.5"/><path d="M14 10a4.5 4.5 0 0 0-6.4-.4l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.5-1.5"/>',
+    up:'<path d="M4 17l5-5 4 3 7-8"/><path d="M14 7h6v6"/>',
+    eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
+    send:'<path d="M21 3 10 14"/><path d="M21 3l-7 18-3-7-7-3z"/>',
+    inbox:'<path d="M4 13h4l2 3h4l2-3h4"/><path d="M4 13V6h16v7"/><path d="M4 13v5h16v-5"/>'
   }[n];
   return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 };

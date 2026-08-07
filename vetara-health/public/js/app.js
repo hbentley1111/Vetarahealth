@@ -27,6 +27,20 @@ const fmtDate = d => d ? new Date(d + (d.length === 10 ? 'T00:00' : '')).toLocal
 const fmtDT = d => d ? new Date(d.replace(' ', 'T')).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
 const initials = n => n.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
+function qrSvg(seedStr = 'VETARA') {
+  let seed = 0; for (const ch of seedStr) seed = (seed * 31 + ch.charCodeAt(0)) % 997;
+  let c = '';
+  const rnd = (i, j) => ((i * 7 + j * 13 + i * j * 3 + seed) % 5) < 2;
+  for (let i = 0; i < 21; i++) for (let j = 0; j < 21; j++) {
+    const f = (i < 7 && j < 7) || (i < 7 && j > 13) || (i > 13 && j < 7);
+    if (f) {
+      const oi = i < 7 ? 0 : 14, oj = j < 7 ? 0 : 14, di = i - oi, dj = j - oj;
+      if (di === 0 || di === 6 || dj === 0 || dj === 6 || (di > 1 && di < 5 && dj > 1 && dj < 5)) c += `<rect x="${j * 8}" y="${i * 8}" width="8" height="8"/>`;
+    } else if (rnd(i, j)) c += `<rect x="${j * 8}" y="${i * 8}" width="8" height="8"/>`;
+  }
+  return `<svg viewBox="0 0 168 168" width="100%" height="100%" fill="#0b1626">${c}</svg>`;
+}
+
 /* ============ BOOT ============ */
 async function boot() {
   try { S.user = await api('/auth/me'); showApp(); }
@@ -42,7 +56,7 @@ function showLanding() {
   <nav class="top">
     <div class="logo"><div class="mark">${I('paw', 18)}</div><span>Vetara <b>Health</b></span></div>
     <div class="links">
-      <a href="#features">Health Records</a><a href="#network">Provider Network</a><a href="#analytics">Analytics</a>
+      <a href="#features">Health Records</a><a href="#network">Provider Network</a><a href="#insurance-sect">Insurance</a><a href="#qr-sect">QR Protection</a><a href="#pricing">Pricing</a>
     </div>
     <button class="btn btn-line btn-sm" onclick="showAuth('login','provider')">${I('steth', 15)} For Providers</button>
     <button class="btn btn-ghost btn-sm" onclick="showAuth('login')">Sign In</button>
@@ -103,12 +117,83 @@ function showLanding() {
         .map(f => `<div class="card hov feat"><div class="gicon" style="background:${f[1]}">${I(f[0], 20)}</div><h3>${f[2]}</h3><p>${f[3]}</p></div>`).join('')}
     </div>
   </div>
-  <div class="sect center" id="analytics" style="padding-bottom:110px">
-    <span class="kicker">Get Started</span>
-    <h2 class="big">Ready to transform your pet's care?</h2>
-    <p class="sub">Create a free account as a pet owner or provider and start managing health records today.</p>
-    <button class="btn btn-p" onclick="showAuth('register')">Create Free Account ${I('arrow', 16)}</button>
-  </div>`;
+  <div class="sect" id="insurance-sect" style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center">
+    <div>
+      <span class="kicker">Insurance Integration</span>
+      <h2 class="big">Smart Insurance Management</h2>
+      <p class="muted" style="margin-bottom:28px">Seamlessly integrate with major pet insurance providers and optimize your coverage.</p>
+      ${[['check', 'var(--grad-gm)', 'Health Score Discounts', "Earn up to 25% insurance discounts based on your pet's health score."],
+         ['bolt', 'var(--grad-bp)', 'Automated Claims', 'Streamlined claim processing with digital health records.'],
+         ['chart', 'var(--grad-pp)', 'Coverage Optimization', 'AI-powered recommendations for optimal insurance coverage.']]
+        .map(f => `<div class="hrow" style="margin-bottom:20px"><div class="gicon" style="background:${f[1]};width:38px;height:38px">${I(f[0], 17)}</div>
+          <div><div class="t1">${f[2]}</div><div class="t2">${f[3]}</div></div></div>`).join('')}
+    </div>
+    <div class="card" style="padding:30px">
+      <div class="gicon" style="background:var(--grad-gm);width:56px;height:56px;margin:0 auto 16px">${I('coin', 26)}</div>
+      <div class="center"><div style="font-size:1.5rem;font-weight:800">Save up to $2,400/year</div>
+      <div class="t2" style="margin-bottom:18px">Average savings with health score optimization</div></div>
+      ${[['Excellent Health (90–100)', '25% discount'], ['Good Health (80–89)', '20% discount'], ['Fair Health (70–79)', '15% discount']]
+        .map(t => `<div class="tierrow"><span class="muted">${t[0]}</span><b style="color:var(--green)">${t[1]}</b></div>`).join('')}
+    </div>
+  </div>
+  <div class="sect" id="qr-sect" style="display:grid;grid-template-columns:1fr 1.2fr;gap:60px;align-items:center">
+    <div class="card center" style="padding:34px">
+      <div class="qrbox">${qrSvg('LANDING')}</div>
+      <div class="t1" style="margin-top:18px">Instant Pet ID</div>
+      <div class="t2">Scan to access pet information, medical history, and emergency contacts</div>
+    </div>
+    <div>
+      <span class="kicker">QR Protection Technology</span>
+      <h2 class="big">Next-Generation Pet Identification</h2>
+      <p class="muted" style="margin-bottom:28px">Smart QR codes with location alerts, emergency protocols, and instant access to critical information.</p>
+      ${[['pin', 'var(--grad)', 'Location Alerts', "Real-time location updates the moment your pet's tag is scanned."],
+         ['bell', 'var(--grad-or)', 'Emergency Protocol', 'Automatic alerts to emergency contacts and nearby veterinarians.'],
+         ['shield', 'var(--grad-gm)', 'Secure & Private', "End-to-end encryption protects your pet's sensitive information."]]
+        .map(f => `<div class="hrow" style="margin-bottom:20px"><div class="gicon" style="background:${f[1]};width:38px;height:38px">${I(f[0], 17)}</div>
+          <div><div class="t1">${f[2]}</div><div class="t2">${f[3]}</div></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="sect center" id="pricing">
+    <span class="kicker">${I('steth', 13)} Veterinary Professionals</span>
+    <h2 class="big">The Provider Portal</h2>
+    <p class="sub">A dedicated workspace for vets, groomers, and trainers to access patient records, submit visit notes, and manage their practice — all in one place.</p>
+    <div class="grid3" style="text-align:left">
+      ${[['BASIC', '$29.99', 'Up to 50 patients', 0, ['Full medical history access', 'AI document import', 'Record submission', 'Appointment reminders to clients', 'HIPAA-compliant platform']],
+         ['PRO', '$49.99', 'Up to 150 patients', 1, ['Everything in Basic', 'Priority patient access', 'Email record parsing', 'Open-slot broadcasts (Smart Fill)', 'Advanced analytics']],
+         ['ENTERPRISE', '$99.99', 'Up to 500 patients', 0, ['Everything in Pro', 'Custom notification workflows', 'Dedicated support', 'Custom integrations', 'Multi-provider accounts']]]
+        .map(p => `<div class="card price ${p[3] ? 'pop' : ''}">${p[3] ? '<span class="poptag">Most Popular</span>' : ''}
+          <div class="tier">${p[0]}</div><div class="amt">${p[1]}<small> /mo</small></div><div class="t2">${p[2]}</div>
+          <ul>${p[4].map(f => `<li>${I('check', 14)}${f}</li>`).join('')}</ul>
+          <button class="btn ${p[3] ? 'btn-p' : 'btn-ghost'}" onclick="showAuth('register','provider')">Start 30-Day Free Trial</button></div>`).join('')}
+    </div>
+    <div class="t3" style="margin-top:18px">All plans include a 30-day free trial. No credit card required.</div>
+  </div>
+  <div class="sect grid2" id="analytics" style="padding-top:0">
+    <div class="card" style="padding:28px">
+      <div class="hrow" style="margin-bottom:14px"><div class="gicon" style="background:var(--grad)">${I('heart', 19)}</div>
+        <div><div class="t1" style="font-size:1.05rem">I'm a Pet Owner</div><div class="t2">Manage health records &amp; share access</div></div></div>
+      <ul style="list-style:none;margin-bottom:20px">${['Store lifelong medical records in one place', 'Book with verified providers instantly', 'Get a QR code for emergency identification', 'Track vaccinations, visits & prescriptions'].map(f => `<li style="display:flex;gap:9px;font-size:.82rem;color:var(--muted);padding:5px 0">${I('check', 14)}<span>${f}</span></li>`).join('')}</ul>
+      <div style="display:flex;gap:10px"><button class="btn btn-p" style="flex:1" onclick="showAuth('register')">Create Free Account</button><button class="btn btn-ghost" style="flex:1" onclick="showAuth('login')">Sign In</button></div>
+    </div>
+    <div class="card" style="padding:28px;border-color:rgba(59,130,246,.4)">
+      <div class="hrow" style="margin-bottom:14px"><div class="gicon" style="background:var(--grad-bp)">${I('steth', 19)}</div>
+        <div class="grow"><div class="t1" style="font-size:1.05rem">I'm a Veterinary Professional</div><div class="t2">Vets · Groomers · Trainers</div></div>
+        <span class="badge bg-blue">Pro Portal</span></div>
+      <ul style="list-style:none;margin-bottom:20px">${["Access records for patients who've booked you", 'Submit visit notes & treatment records directly', 'Broadcast open slots to nearby owners', 'Manage your reviews and reputation'].map(f => `<li style="display:flex;gap:9px;font-size:.82rem;color:var(--muted);padding:5px 0">${I('check', 14)}<span>${f}</span></li>`).join('')}</ul>
+      <div style="display:flex;gap:10px"><button class="btn btn-p" style="flex:1;background:var(--grad-bp)" onclick="showAuth('login','provider')">Sign In to Provider Portal</button><button class="btn btn-ghost" style="flex:1" onclick="showAuth('register','provider')">Register as Provider</button></div>
+      <div class="t3 center" style="margin-top:12px">30-day free trial · No credit card required</div>
+    </div>
+  </div>
+  <footer>
+    <div class="col">
+      <div class="logo" style="margin-bottom:12px"><div class="mark">${I('paw', 18)}</div><span>Vetara <b>Health</b></span></div>
+      <div class="t2" style="max-width:260px">Enterprise-grade pet health management platform for the modern world.</div>
+      <div class="t3" style="margin-top:18px">© 2026 Vetara Health. Enterprise-grade pet health solutions.</div>
+    </div>
+    <div class="col"><h4>Platform</h4><a onclick="showAuth('login')">Health Records</a><a onclick="showAuth('login')">QR Technology</a><a onclick="showAuth('login')">Provider Network</a><a onclick="showAuth('login')">Analytics Dashboard</a></div>
+    <div class="col"><h4>Enterprise</h4><a onclick="showAuth('login')">Insurance</a><a onclick="showAuth('login','provider')">Provider Portal</a><a onclick="showAuth('login')">Dashboard</a><a onclick="showAuth('login')">Directory</a></div>
+    <div class="col"><h4>Legal</h4><a onclick="toast('Coming soon')">Privacy</a><a onclick="toast('Coming soon')">Terms</a><a onclick="toast('Coming soon')">Security</a></div>
+  </footer>`;
   window.scrollTo(0, 0);
 }
 
@@ -186,8 +271,8 @@ function go(screen, extra = {}) {
 function nav() {
   const owner = S.user.role === 'owner';
   const items = owner
-    ? [['dash', 'grid', 'Dashboard'], ['pets', 'paw', 'My Pets'], ['records', 'doc', 'Health Records'], ['providers', 'steth', 'Find Providers'], ['appts', 'cal', 'Appointments']]
-    : [['dash', 'grid', 'Dashboard'], ['patients', 'paw', 'Patients'], ['appts', 'cal', 'Appointments'], ['records', 'doc', 'Records']];
+    ? [['dash', 'grid', 'Dashboard'], ['pets', 'paw', 'My Pets'], ['records', 'doc', 'Health Records'], ['providers', 'steth', 'Find Providers'], ['grading', 'star', 'Top-Rated Vets'], ['appts', 'cal', 'Appointments'], ['insurance', 'coin', 'Insurance'], ['ai', 'brain', 'AI Vet Assistant'], ['community', 'users', 'Community']]
+    : [['dash', 'grid', 'Dashboard'], ['patients', 'paw', 'Patients'], ['appts', 'cal', 'Appointments'], ['slots', 'bolt', 'Open Slots'], ['inbox', 'mail', 'AI Import Inbox'], ['records', 'doc', 'Records'], ['prreviews', 'star', 'Reviews']];
   const active = { petDetail: 'pets', providerDetail: 'providers' }[S.screen] || S.screen;
   $('sidebar').innerHTML = `
     <div class="logo"><div class="mark">${I('paw', 18)}</div><span>Vetara <b>Health</b></span></div>
@@ -210,7 +295,9 @@ async function render() {
     dash: S.user.role === 'owner' ? ownerDash : providerDash,
     pets: petsScreen, petDetail: petDetailScreen, records: recordsScreen,
     providers: providersScreen, providerDetail: providerDetailScreen,
-    appts: apptsScreen, patients: patientsScreen
+    appts: apptsScreen, patients: patientsScreen,
+    grading: gradingScreen, insurance: insuranceScreen, ai: aiScreen, community: communityScreen,
+    slots: slotsScreen, inbox: inboxScreen, prreviews: prReviewsScreen
   }[S.screen];
   $('page').innerHTML = '<div class="empty">Loading…</div>';
   try { await fn(); } catch (e) { $('page').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
@@ -339,6 +426,16 @@ async function petDetailScreen() {
           <button class="btn btn-danger btn-sm" onclick="delMed(${p.id},${m.id})">${I('trash', 12)}</button></span></div>`).join('')
           : '<div class="empty">No active medications.</div>'}
       </div>
+      <h3 class="sec">Smart QR Tag</h3>
+      <div class="card" style="text-align:center">
+        <div class="qrbox" style="width:150px;height:150px">${qrSvg(p.tag_id || p.name)}</div>
+        <div class="t1" style="margin-top:12px">${esc(p.tag_id || '—')}</div>
+        <div class="t2" style="margin-bottom:14px">Scans show ${esc(p.name)}'s public profile, critical alerts, and your contact preferences — never your address.</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="toast('Tag image downloaded')">Download</button>
+          <button class="btn btn-p btn-sm" style="flex:1" onclick="toast('Lost-pet mode armed — scans now alert you instantly')">Lost-Pet Mode</button>
+        </div>
+      </div>
       <h3 class="sec">Identity</h3>
       <div class="card">
         <div class="kv"><span class="k">Microchip</span><span class="v">${esc(p.microchip || '—')}</span></div>
@@ -351,10 +448,24 @@ async function petDetailScreen() {
 
 async function recordsScreen() {
   topbar('Health Records', 'All visits & documents');
-  const recs = await api('/records');
+  const all = await api('/records');
+  const types = ['All Types', 'Vaccination', 'Routine Checkup', 'Lab Results', 'Emergency', 'Dental', 'Surgery', 'Other'];
+  const petNames = ['All Pets', ...new Set(all.map(r => r.pet_name))];
+  let recs = all;
+  if (S.recType && S.recType !== 'All Types') recs = recs.filter(r => r.type === S.recType);
+  if (S.recPet && S.recPet !== 'All Pets') recs = recs.filter(r => r.pet_name === S.recPet);
   $('page').innerHTML = `<div class="screen">
-    ${S.user.role === 'owner' ? `<div class="filters"><div class="grow"></div>
-      <button class="btn btn-p btn-sm" onclick="openRecordModal()">${I('plus', 14)} Add record</button></div>` : ''}
+    <div class="statgrid">
+      ${[[all.length, 'Total Records'], [all.filter(r => r.type === 'Vaccination').length, 'Vaccinations'],
+         [all.filter(r => r.type === 'Routine Checkup').length, 'Routine Checkups'], [all.filter(r => r.type === 'Emergency').length, 'Emergency']]
+        .map(s => `<div class="card stat"><div class="l">${s[1]}</div><div class="v">${s[0]}</div></div>`).join('')}
+    </div>
+    <div class="filters">
+      <select onchange="go('records',{recType:this.value})">${types.map(t => `<option ${S.recType === t ? 'selected' : ''}>${t}</option>`).join('')}</select>
+      <select onchange="go('records',{recPet:this.value})">${petNames.map(t => `<option ${S.recPet === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>
+      <div class="grow"></div>
+      ${S.user.role === 'owner' ? `<button class="btn btn-p btn-sm" onclick="openRecordModal()">${I('plus', 14)} Add record</button>` : ''}
+    </div>
     <div class="card">
     ${recs.length ? recs.map(r => `
       <div class="rowitem">
@@ -372,9 +483,28 @@ async function recordsScreen() {
 
 async function providersScreen() {
   topbar('Find Providers', 'Verified network');
-  const provs = await api('/providers' + (S.provType !== 'All' ? '?type=' + encodeURIComponent(S.provType) : ''));
+  const [provs, slots] = await Promise.all([
+    api('/providers' + (S.provType !== 'All' ? '?type=' + encodeURIComponent(S.provType) : '')),
+    S.user.role === 'owner' ? api('/slots') : Promise.resolve([])
+  ]);
   const types = ['All', 'Veterinarian', 'Emergency', 'Groomer', 'Dog Walker', 'Trainer', 'Boarding'];
   $('page').innerHTML = `<div class="screen">
+  ${slots.length ? `
+  <div class="card" style="margin-bottom:18px;border-color:rgba(34,211,238,.35)">
+    <div class="hrow" style="margin-bottom:6px">
+      <div class="gicon" style="background:var(--grad)">${I('bolt', 18)}</div>
+      <div class="grow"><div class="t1">Last-minute openings near you</div>
+      <div class="t2">Providers broadcast cancellations to owners nearby — claim before they expire</div></div>
+      <span class="badge bg-cyan">● Live</span>
+    </div>
+    ${slots.map(l => `<div class="rowitem">
+      <div class="gicon" style="background:var(--card2);border:1px solid var(--line2);width:36px;height:36px;color:var(--cyan)">${I('clock', 15)}</div>
+      <div class="grow"><div class="t1" style="font-size:.84rem">${esc(l.provider_name)} <span class="muted" style="font-weight:500">· ${esc(l.distance || '')}</span></div>
+      <div class="t2">${esc(l.service)} · <b style="color:var(--text)">${fmtDT(l.slot_at)}</b></div></div>
+      ${l.incentive ? `<span class="badge bg-green">${esc(l.incentive)}</span>` : ''}
+      <button class="btn btn-p btn-sm" onclick="openClaimModal(${l.id},'${esc(l.provider_name)}')">Claim</button>
+    </div>`).join('')}
+  </div>` : ''}
   <div class="pills">${types.map(t => `<button class="${S.provType === t ? 'on' : ''}" onclick="go('providers',{provType:'${t}'})">${t}</button>`).join('')}</div>
   ${provs.map(v => `
   <div class="card hov" style="margin-bottom:12px" onclick="go('providerDetail',{provider:${v.id}})">
@@ -516,6 +646,320 @@ async function patientsScreen() {
       <div class="grow"><div class="t2"><b style="color:var(--text)">${esc(r.title)}</b> · ${fmtDate(r.visited_on)}</div>
       <div class="t3">${esc(r.note || '')}</div></div></div>`).join('')}
   </div>`).join('') : '<div class="card empty">No patients yet.</div>'}
+  </div>`;
+}
+
+/* ============ TOP-RATED VETS (GRADING) ============ */
+async function gradingScreen() {
+  topbar('Top-Rated Veterinary Providers', 'Quality grades');
+  const provs = (await api('/providers')).filter(v => ['Veterinarian', 'Emergency'].includes(v.type));
+  $('page').innerHTML = `<div class="screen">
+  <div class="card" style="margin-bottom:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+    ${[['shield', 'Patient Safety', 'Complication rates, emergency response'], ['heart', 'Patient Experience', 'Communication, compassion, satisfaction'],
+       ['bolt', 'Clinical Quality', 'Treatment success, outcomes'], ['clock', 'Timeliness', 'Wait times, scheduling reliability']]
+      .map(m => `<div class="hrow"><div class="gicon" style="background:var(--grad-bp);width:34px;height:34px">${I(m[0], 15)}</div>
+        <div><div class="t1" style="font-size:.78rem">${m[1]}</div><div class="t3">${m[2]}</div></div></div>`).join('')}
+  </div>
+  ${provs.map(v => {
+    const met = v.metrics ? JSON.parse(v.metrics) : {};
+    return `<div class="card hov" style="margin-bottom:14px" onclick="go('providerDetail',{provider:${v.id}})">
+    <div class="hrow">
+      <div class="grade ${v.grade === 'A+' ? 'gA' : 'gB'}"><span class="g">${esc(v.grade)}</span><small>${esc((v.grade_word || '').toUpperCase())}</small></div>
+      <div class="grow"><div class="t1" style="font-size:.95rem">${esc(v.name)}</div><div class="t2">${esc(v.doctor || '')} · ${esc(v.distance || '')}</div>
+        <div class="hrow" style="gap:7px;margin-top:3px">${v.rating ? stars(v.rating) + `<span class="t2">${v.rating} (${v.reviewCount})</span>` : '<span class="t3">No reviews yet</span>'}</div></div>
+      <div class="center"><div style="font-size:1.3rem;font-weight:800;color:var(--green)">${v.rec_rate}%</div><div class="t3">Recommendation<br>Rate</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:16px">
+      ${[['Patient Safety', met.safety], ['Experience', met.exp], ['Clinical Quality', met.clinical], ['Communication', met.comm], ['Timeliness', met.time]]
+        .map(m => `<div class="metric"><div class="mrow"><span class="muted" style="font-size:.68rem">${m[0]}</span><b style="font-size:.7rem">${m[1] || '—'}</b></div>
+          <div class="bar" style="height:5px"><i style="width:${m[1] || 0}%;background:${(m[1] || 0) >= 95 ? 'var(--grad-gm)' : 'var(--grad)'}"></i></div></div>`).join('')}
+    </div>
+  </div>`;
+  }).join('')}</div>`;
+}
+
+/* ============ INSURANCE ============ */
+async function insuranceScreen() {
+  topbar('Pet Insurance Dashboard', 'Health-score discounts');
+  const { policies, claims, tiers } = await api('/insurance');
+  const saved = policies.reduce((a, p) => a + (parseInt((p.saved_note || '').replace(/[^0-9]/g, '')) || 0), 0);
+  $('page').innerHTML = `<div class="screen">
+  <div class="statgrid">
+    ${[[policies.length, 'Active Policies'], ['$' + saved, 'Total Savings YTD'],
+       [claims.filter(c => c.status === 'Reimbursed').length + ' of ' + claims.length, 'Claims Reimbursed'],
+       [(policies[0] ? '−' + Math.max(...policies.map(p => p.discount)) + '%' : '—'), 'Best Discount']]
+      .map(s => `<div class="card stat"><div class="l">${s[1]}</div><div class="v">${s[0]}</div></div>`).join('')}
+  </div>
+  <div class="twocol">
+    <div>
+      <h3 class="sec">Policies &amp; Health-Score Discounts</h3>
+      ${policies.length ? policies.map(p => `<div class="card" style="margin-bottom:12px">
+        <div class="hrow">
+          <div class="pet-head" style="background:${p.color};width:42px;height:42px;font-size:.95rem">${esc(p.pet_name[0])}</div>
+          <div class="grow"><div class="t1">${esc(p.pet_name)} — ${esc(p.carrier)}</div><div class="t2">${esc(p.coverage || '')} · ${esc(p.premium || '')}</div></div>
+          <span class="badge bg-green">−${p.discount}% discount</span>
+        </div>
+        <div class="metric" style="margin-top:14px"><div class="mrow"><span class="muted">Health score ${p.health_score} → discount tier</span><b style="color:var(--green)">${p.discount}%</b></div>
+        <div class="bar"><i style="width:${p.health_score}%;background:var(--grad-gm)"></i></div></div>
+        <div class="t3">${esc(p.saved_note || '')}</div>
+      </div>`).join('') : '<div class="card empty">No policies on file.</div>'}
+      <h3 class="sec">Recent Claims</h3>
+      <div class="card">
+        ${claims.length ? claims.map(c => `<div class="rowitem">
+          <div class="grow"><div class="t1">${esc(c.what)}</div><div class="t2">${esc(c.pet_name)} · ${fmtDate(c.claimed_on)}</div></div>
+          <div class="t1" style="margin-right:12px">${esc(c.amount || '')}</div>
+          <span class="badge ${c.status === 'Reimbursed' ? 'bg-green' : c.status === 'Denied' ? 'bg-red' : 'bg-amber'}">${c.status}</span>
+        </div>`).join('') : '<div class="empty">No claims yet.</div>'}
+      </div>
+    </div>
+    <div>
+      <h3 class="sec">How Insurance Discounts Work</h3>
+      <div class="card">
+        <div class="t2" style="margin-bottom:14px">Keeping records current, vaccinations on time, and wellness visits regular raises each pet's health score — which maps directly to premium discounts.</div>
+        ${tiers.map(t => `<div class="tierrow"><span class="muted">${t[0]}</span><b style="color:var(--green)">${t[1]}</b></div>`).join('')}
+      </div>
+      <div class="card" style="margin-top:14px;border-color:rgba(52,211,153,.35)">
+        <div class="hrow"><div class="gicon" style="background:var(--grad-gm)">${I('coin', 18)}</div>
+          <div><div class="t1">Save up to $2,400/year</div><div class="t2">Average savings with health-score optimization</div></div></div>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+/* ============ AI VET ASSISTANT ============ */
+const CHAT_TOPICS = [
+  ['Vaccinations', 'What vaccinations do my pets need, and are any due?'],
+  ['Medications', 'What medications are my pets currently on?'],
+  ['Appointments', 'What appointments do I have coming up?'],
+  ['Pet Nutrition', 'What should I look for in a high-quality pet food?'],
+  ['Flea Prevention', "What's the best year-round flea prevention strategy?"],
+  ['Dental Care', 'How do I care for my pet\u2019s teeth?'],
+  ['Senior Pet Care', 'How should care change as my pet gets older?']
+];
+async function aiScreen() {
+  topbar('AI Vet Health Assistant', 'Grounded in your records');
+  if (!S.msgs) S.msgs = [];
+  $('page').innerHTML = `<div class="screen">
+  <div class="chatwrap">
+    <div class="card chatlist">
+      <div class="t1" style="margin-bottom:10px">Topics</div>
+      ${CHAT_TOPICS.map(([t, q]) => `<div class="ci" onclick="askAI('${esc(q).replace(/'/g, "\\'")}')">
+        <div class="t1" style="font-size:.78rem">${t}</div>
+        <div class="t3" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${q}</div></div>`).join('')}
+    </div>
+    <div class="card chatbox">
+      <div class="hrow" style="padding-bottom:14px;border-bottom:1px solid var(--line)">
+        <div class="gicon" style="background:var(--grad-bp);width:38px;height:38px">${I('brain', 17)}</div>
+        <div class="grow"><div class="t1">Vetara Health AI Assistant</div><div class="t2">Answers grounded in your pets' actual records</div></div>
+        <span class="badge bg-purple">${I('spark', 11)} AI</span>
+      </div>
+      <div class="msgs" id="msgs" style="padding-top:14px">
+        ${S.msgs.length ? S.msgs.map(m => `<div class="msg ${m.role}">${m.role === 'user' ? esc(m.text) : m.text}</div>`).join('') : `
+        <div class="msg ai">Hi ${esc(S.user.name.split(' ')[0])} — ask me anything about your pets. I can see their vaccination status, medications, visits, and appointments.<br><br>Try a suggested topic:</div>
+        <div class="sugg">${CHAT_TOPICS.map(([t, q]) => `<button onclick="askAI('${esc(q).replace(/'/g, "\\'")}')">${t}</button>`).join('')}</div>`}
+      </div>
+      <div class="chatinput">
+        <input id="aiq" placeholder="Ask about your pet's health…" onkeydown="if(event.key==='Enter')sendAI()">
+        <button class="btn btn-p" onclick="sendAI()">${I('send', 16)} Send</button>
+      </div>
+    </div>
+  </div></div>`;
+  const m = $('msgs'); if (m) m.scrollTop = m.scrollHeight;
+}
+async function askAI(q) {
+  S.msgs = S.msgs || [];
+  S.msgs.push({ role: 'user', text: q });
+  await aiScreen();
+  try {
+    const { answer } = await api('/assistant', { method: 'POST', body: { question: q } });
+    S.msgs.push({ role: 'ai', text: answer });
+  } catch (e) { S.msgs.push({ role: 'ai', text: 'Sorry — something went wrong. ' + esc(e.message) }); }
+  aiScreen();
+}
+function sendAI() {
+  const el = $('aiq');
+  if (!el || !el.value.trim()) return;
+  const q = el.value.trim(); el.value = '';
+  askAI(q);
+}
+
+/* ============ COMMUNITY ============ */
+async function communityScreen() {
+  topbar('Pet Community', 'Owners near you');
+  const posts = await api('/posts');
+  $('page').innerHTML = `<div class="screen">
+  <div class="twocol">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="hrow"><div class="uava">${initials(S.user.name)}</div>
+          <input id="newpost" style="flex:1;background:#0a1424;border:1px solid var(--line2);border-radius:99px;padding:11px 18px;color:var(--text);font-size:.84rem;outline:0"
+            placeholder="Share an update about your pet…" onkeydown="if(event.key==='Enter')submitPost()">
+          <button class="btn btn-p btn-sm" onclick="submitPost()">Post</button></div>
+      </div>
+      ${posts.map(p => `<div class="card" style="margin-bottom:14px">
+        <div class="hrow"><div class="uava" style="background:var(--grad-bp)">${initials(p.author)}</div>
+          <div class="grow"><div class="t1" style="font-size:.84rem">${esc(p.author)}${p.clinic_name ? ' · ' + esc(p.clinic_name) : ''}</div>
+          <div class="t3">${fmtDate((p.created_at || '').slice(0, 10))}${p.sponsored ? ' · <span style="color:#7eb3fa;font-weight:700">Partner</span>' : ''}</div></div>
+          ${p.sponsored ? '<span class="badge bg-blue">Partner</span>' : ''}
+          ${p.user_id === S.user.id ? `<button class="btn btn-danger btn-sm" onclick="delPost(${p.id})">${I('trash', 12)}</button>` : ''}</div>
+        <div class="t2" style="color:var(--text);margin-top:11px">${esc(p.text)}</div>
+        ${p.image_style ? `<div class="postimg" style="background:${p.image_style}"><span>${esc(p.image_caption || '')}</span></div>` : ''}
+        <div class="pact">
+          <span onclick="likePost(${p.id},this)">${I('heart', 15)} <b id="likes-${p.id}">${p.likes}</b></span>
+          <span>${I('msg', 15)} ${p.comments}</span>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div>
+      <h3 class="sec">Trending Nearby</h3>
+      <div class="card">
+        ${['Pollen spike: itchy paws reported at Fairview Park', 'New cat-only clinic opening in NoDa', 'Lost-pet reunions via QR up 32% this quarter']
+          .map(t => `<div class="rowitem"><div class="gicon" style="background:var(--card2);border:1px solid var(--line2);width:30px;height:30px;color:var(--cyan)">${I('up', 13)}</div><div class="t2 grow">${t}</div></div>`).join('')}
+      </div>
+      <h3 class="sec">Community Guidelines</h3>
+      <div class="card"><div class="t2">Share wins, ask questions, and flag local health trends. Medical advice in the feed is peer experience — always confirm with your vet.</div></div>
+    </div>
+  </div></div>`;
+}
+async function submitPost() {
+  const el = $('newpost');
+  if (!el || !el.value.trim()) return;
+  try { await api('/posts', { method: 'POST', body: { text: el.value } }); toast('Posted'); render(); }
+  catch (e) { toast(e.message, true); }
+}
+async function likePost(id, el) {
+  try { const { likes } = await api(`/posts/${id}/like`, { method: 'POST' }); $('likes-' + id).textContent = likes; }
+  catch { }
+}
+async function delPost(id) {
+  try { await api('/posts/' + id, { method: 'DELETE' }); toast('Post deleted'); render(); }
+  catch (e) { toast(e.message, true); }
+}
+
+/* ============ PROVIDER: OPEN SLOTS (SMART FILL) ============ */
+async function slotsScreen() {
+  topbar('Open Slots & Smart Fill', 'Broadcast cancellations');
+  const slots = await api('/slots');
+  const claimed = slots.filter(s => s.status === 'claimed').length;
+  const tomorrow = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+  $('page').innerHTML = `<div class="screen">
+  <div class="statgrid">
+    ${[[slots.filter(s => s.status === 'open').length, 'Live broadcasts'], [claimed, 'Slots recovered'],
+       [slots.reduce((a, s) => a + s.reached, 0).toLocaleString(), 'Total owners reached'], ['24 min', 'Avg time to fill']]
+      .map(s => `<div class="card stat"><div class="l">${s[1]}</div><div class="v">${s[0]}</div></div>`).join('')}
+  </div>
+  <div class="twocol">
+    <div class="card">
+      <div class="t1" style="margin-bottom:4px">Broadcast an open slot</div>
+      <div class="t2">Notifies every Vetara owner inside your chosen radius. Slots are claimed first-come, first-served and auto-fill your calendar.</div>
+      <form class="field" onsubmit="broadcastSlot(event)">
+        <label>Service</label>
+        <select id="s-svc">${['Wellness exam', 'Vaccination visit', 'Dental consult', 'Dermatology recheck', 'Surgery consult'].map(s => `<option>${s}</option>`).join('')}</select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div><label>Date</label><input id="s-date" type="date" required value="${tomorrow}"></div>
+          <div><label>Time</label><input id="s-time" type="time" required value="11:00"></div>
+        </div>
+        <label>Notification radius — <b id="rlabel" style="color:var(--cyan)">30 miles</b></label>
+        <input type="range" min="5" max="50" step="5" value="30" id="s-radius" style="accent-color:var(--blue);padding:0"
+          oninput="document.getElementById('rlabel').textContent=this.value+' miles';document.getElementById('reach').textContent=Math.max(40,Math.round(2314*this.value*this.value/900)).toLocaleString()">
+        <div class="card" style="background:var(--card2);padding:14px;margin-top:12px">
+          <div class="hrow"><div class="gicon" style="background:var(--grad-bp);width:34px;height:34px">${I('users', 15)}</div>
+          <div class="t2">Estimated reach: <b style="color:var(--text)"><span id="reach">2,314</span> owners</b> with matching pets &amp; notification preferences</div></div>
+        </div>
+        <label>Incentive (optional)</label>
+        <select id="s-inc"><option value="">None</option><option>15% off — short-notice discount</option><option>10% off</option><option>Waived exam fee for new patients</option></select>
+        <button class="btn btn-p" style="width:100%;margin-top:18px" type="submit">${I('send', 15)} Broadcast to nearby owners</button>
+      </form>
+    </div>
+    <div>
+      <h3 class="sec">How Smart Fill works</h3>
+      <div class="card">
+        ${[['bell', 'A slot opens', 'Cancellation or no-show is detected from your calendar.'],
+           ['users', 'Owners are notified', 'Notification goes to every opted-in owner in your radius — nearest and overdue-for-care pets first.'],
+           ['check', 'First claim wins', 'The slot books instantly, records are shared, and your calendar updates.']]
+          .map((s, i) => `<div class="rowitem"><div class="gicon" style="background:var(--grad);width:34px;height:34px">${I(s[0], 15)}</div>
+            <div class="grow"><div class="t1" style="font-size:.82rem">${i + 1}. ${s[1]}</div><div class="t2">${s[2]}</div></div></div>`).join('')}
+      </div>
+      <h3 class="sec">Broadcast history</h3>
+      ${slots.length ? slots.map(b => `<div class="card" style="margin-bottom:11px">
+        <div class="hrow">
+          <div class="grow"><div class="t1" style="font-size:.82rem">${fmtDT(b.slot_at)} — ${esc(b.service)}</div>
+          <div class="t3">${esc(b.cause)} · ${b.radius} mi radius · reached ${b.reached.toLocaleString()} owners</div></div>
+          <span class="badge ${b.status === 'open' ? 'bg-cyan' : b.status === 'claimed' ? 'bg-green' : 'bg-slate'}">${b.status === 'open' ? 'Live' : b.status === 'claimed' ? 'Claimed' : 'Expired'}</span>
+        </div>
+        ${b.claimed_by ? `<div class="t2" style="margin-top:7px">${I('check', 12)} Claimed by <b style="color:var(--text)">${esc(b.claimed_by)}</b></div>` : ''}
+      </div>`).join('') : '<div class="card empty">No broadcasts yet.</div>'}
+    </div>
+  </div></div>`;
+}
+async function broadcastSlot(e) {
+  e.preventDefault();
+  try {
+    const s = await api('/slots', { method: 'POST', body: {
+      service: $('s-svc').value, slotAt: $('s-date').value + ' ' + $('s-time').value,
+      radius: +$('s-radius').value, incentive: $('s-inc').value || null } });
+    toast(`Broadcast sent to ${s.reached.toLocaleString()} owners within ${s.radius} miles`);
+    render();
+  } catch (err) { toast(err.message, true); }
+}
+
+/* ============ PROVIDER: AI IMPORT INBOX (demo) ============ */
+const INBOX_DOCS = [
+  { from: 'records@banfield.com', subj: "Attached is Max's vaccination certificate", pet: 'Max · Labrador (matched by chip ID)', conf: 99.2, fields: ['Rabies 3-yr · Jun 04, 2026', 'DHPP · Jun 04, 2026', 'Vet: Dr. A. Costa'], status: 'ready' },
+  { from: 'discharge@westview-er.com', subj: 'Post-op discharge summary — Zeus Morris', pet: 'Zeus · Rottweiler (existing patient)', conf: 97.8, fields: ['TPLO post-op day 14', 'Suture removal cleared', 'Restricted activity 4 wks'], status: 'ready' },
+  { from: 'tessa@happypaws.studio', subj: 'Grooming notes and coat treatment summary', pet: 'Coco · French Bulldog (matched by name+owner)', conf: 94.1, fields: ['Medicated bath — chlorhexidine', 'Skin irritation L flank noted', 'Recommend vet recheck'], status: 'review' }
+];
+async function inboxScreen() {
+  topbar('AI Document Import', 'Email-to-chart parsing');
+  $('page').innerHTML = `<div class="screen">
+  <div class="card" style="margin-bottom:16px">
+    <div class="hrow"><div class="gicon" style="background:var(--grad-bp)">${I('mail', 18)}</div>
+      <div class="grow"><div class="t1">records@vetarahealth.com</div><div class="t2">Emailed documents are parsed by AI and matched to patients automatically</div></div>
+      <span class="badge bg-purple">${I('spark', 11)} AI parsing on</span></div>
+  </div>
+  ${INBOX_DOCS.map((d, i) => `<div class="card" style="margin-bottom:13px" id="doc${i}">
+    <div class="hrow">
+      <div class="gicon" style="background:${d.status === 'ready' ? 'var(--grad-gm)' : 'var(--grad-or)'};width:38px;height:38px">${I('file', 16)}</div>
+      <div class="grow"><div class="t1" style="font-size:.88rem">${d.subj}</div><div class="t2">From ${d.from} · matched to <b style="color:var(--text)">${d.pet}</b></div></div>
+      <span class="badge ${d.status === 'ready' ? 'bg-green' : 'bg-amber'}">${d.conf}% confidence</span>
+    </div>
+    <div style="display:flex;gap:7px;margin:12px 0;flex-wrap:wrap">${d.fields.map(f => `<span class="badge bg-slate">${f}</span>`).join('')}</div>
+    <div style="display:flex;gap:9px">
+      <button class="btn btn-p btn-sm" onclick="acceptDoc(${i},0)">${I('check', 13)} Accept &amp; File to Chart</button>
+      <button class="btn btn-ghost btn-sm" onclick="toast('Opening original document')">${I('eye', 13)} View Original</button>
+      <button class="btn btn-ghost btn-sm" onclick="acceptDoc(${i},1)">${I('x', 13)} Reject</button>
+    </div>
+  </div>`).join('')}
+  <div class="card"><div class="t2">These sample documents demonstrate the import workflow. Connect an inbound-email service (e.g. SendGrid Inbound Parse) to make this live.</div></div>
+  </div>`;
+}
+function acceptDoc(i, rej) {
+  const el = $('doc' + i);
+  if (el) { el.style.opacity = .4; el.querySelectorAll('button').forEach(b => b.disabled = true); }
+  toast(rej ? 'Document rejected' : 'Filed to patient chart — owner notified');
+}
+
+/* ============ PROVIDER: REVIEWS & REPUTATION ============ */
+async function prReviewsScreen() {
+  topbar('Reviews & Reputation', S.user.clinicName || '');
+  const provs = await api('/providers');
+  const mine = provs.find(p => p.user_id === S.user.id);
+  const detail = mine ? await api('/providers/' + mine.id) : { reviews: [], rating: null, reviewCount: 0 };
+  $('page').innerHTML = `<div class="screen">
+  <div class="statgrid">
+    ${[[detail.rating ?? '—', 'Average Rating'], [detail.reviewCount, 'Verified Reviews'],
+       [(mine?.rec_rate ?? '—') + '%', 'Recommendation Rate'], [detail.reviews.length ? '100%' : '—', 'From confirmed visits']]
+      .map(s => `<div class="card stat"><div class="l">${s[1]}</div><div class="v">${s[0]}</div></div>`).join('')}
+  </div>
+  ${detail.reviews.length ? detail.reviews.map(r => `<div class="card" style="margin-bottom:12px">
+    <div class="hrow">
+      <div class="uava" style="background:var(--card2);border:1px solid var(--line2);color:var(--muted)">${initials(r.reviewer)}</div>
+      <div class="grow"><div class="t1" style="font-size:.84rem">${esc(r.reviewer)} <span class="badge bg-green" style="margin-left:5px">${I('check', 10)} Verified visit</span></div>
+      <div class="hrow" style="gap:7px">${stars(r.rating, 11)}<span class="t3">${fmtDate((r.created_at || '').slice(0, 10))}</span></div></div>
+    </div>
+    ${r.title ? `<div class="t1" style="margin-top:8px">${esc(r.title)}</div>` : ''}
+    <div class="t2" style="color:var(--text);margin-top:4px">${esc(r.text || '')}</div>
+  </div>`).join('') : '<div class="card empty">No reviews yet — reviews appear when owners rate their visits.</div>'}
   </div>`;
 }
 
@@ -677,6 +1121,28 @@ async function saveBooking(e, providerId) {
       petId: +$('m-pet').value, providerId, reason: $('m-reason').value,
       scheduledAt: $('m-date').value + ' ' + $('m-time').value } });
     closeModal(); toast('Appointment booked'); go('appts');
+  } catch (err) { toast(err.message, true); }
+}
+
+async function openClaimModal(slotId, providerName) {
+  const pets = S.cache.pets || await api('/pets');
+  S.cache.pets = pets;
+  if (!pets.length) return toast('Add a pet first', true);
+  modal(`<h3>Claim this opening</h3>
+  <div class="t2" style="margin-bottom:6px">${esc(providerName)} — first come, first served. Records are shared automatically.</div>
+  <form class="field" onsubmit="claimSlot(event,${slotId})">
+    <label>Pet</label><select id="m-pet">${pets.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-p grow" type="submit">${I('check', 15)} Claim slot</button>
+      <button class="btn btn-ghost" type="button" onclick="closeModal()">Cancel</button>
+    </div>
+  </form>`);
+}
+async function claimSlot(e, slotId) {
+  e.preventDefault();
+  try {
+    await api(`/slots/${slotId}/claim`, { method: 'POST', body: { petId: +$('m-pet').value } });
+    closeModal(); toast('Slot claimed — appointment confirmed'); go('appts');
   } catch (err) { toast(err.message, true); }
 }
 

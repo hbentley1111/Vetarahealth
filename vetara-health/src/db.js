@@ -80,9 +80,59 @@ function initDb() {
     distance TEXT,
     tags TEXT DEFAULT '',
     grade TEXT DEFAULT 'A',
+    grade_word TEXT DEFAULT 'Excellent',
     services TEXT,
     icon TEXT DEFAULT 'steth',
     gradient TEXT DEFAULT 'var(--grad)',
+    metrics TEXT,
+    rec_rate INTEGER DEFAULT 90,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS insurance_policies (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pet_id INTEGER NOT NULL REFERENCES pets(id) ON DELETE CASCADE,
+    carrier TEXT NOT NULL,
+    premium TEXT,
+    coverage TEXT,
+    discount INTEGER DEFAULT 0,
+    saved_note TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS insurance_claims (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pet_id INTEGER NOT NULL REFERENCES pets(id) ON DELETE CASCADE,
+    what TEXT NOT NULL,
+    amount TEXT,
+    status TEXT DEFAULT 'Processing' CHECK(status IN ('Processing','Reimbursed','Denied')),
+    claimed_on TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    text TEXT NOT NULL,
+    image_style TEXT,
+    image_caption TEXT,
+    likes INTEGER DEFAULT 0,
+    comments INTEGER DEFAULT 0,
+    sponsored INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS open_slots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    provider_id INTEGER NOT NULL REFERENCES providers(id) ON DELETE CASCADE,
+    service TEXT NOT NULL,
+    slot_at TEXT NOT NULL,
+    cause TEXT DEFAULT 'Cancellation',
+    radius INTEGER DEFAULT 30,
+    reached INTEGER DEFAULT 0,
+    incentive TEXT,
+    status TEXT DEFAULT 'open' CHECK(status IN ('open','claimed','expired')),
+    claimed_by TEXT,
     created_at TEXT DEFAULT (datetime('now'))
   );
 
