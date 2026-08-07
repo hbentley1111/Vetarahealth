@@ -101,7 +101,18 @@ insSlot.run(walkers, 'Group walk — 1 spot', '2026-08-09 09:00', 'Spot opened',
 insSlot.run(riverbend, 'Dental consult', '2026-06-05 14:00', 'Cancellation', 30, 2289, null, 'claimed', 'Marcus T. & Bella');
 insSlot.run(riverbend, 'Vaccination visit', '2026-06-02 09:45', 'Cancellation', 10, 412, null, 'expired', null);
 
+// demo verification share links (no-login pages at /r/<token>)
+const weekOut = new Date(Date.now() + 7 * 864e5).toISOString();
+const insShare = db.prepare(`INSERT INTO share_links (pet_id,token,purpose,expires_at) VALUES (?,?,?,?)`);
+insShare.run(luna, 'demoLuna8x2k', 'Grooming', weekOut);
+insShare.run(daisy, 'demoDaisyQm9p', 'Grooming', weekOut);
+db.prepare(`INSERT INTO share_access_log (share_id,action,note) VALUES (1,'viewed','Happy Paws Grooming Studio')`).run();
+db.prepare(`INSERT INTO share_access_log (share_id,action,note) VALUES (1,'confirmed','Happy Paws Grooming Studio')`).run();
+
 console.log('Seed complete.');
 console.log('Demo accounts (password: demo1234)');
 console.log('  Owner:    sarah@demo.vetara');
 console.log('  Provider: elena@demo.vetara');
+console.log('Demo verification links (no login needed):');
+console.log('  /r/demoLuna8x2k   (Luna — cleared/warning state)');
+console.log('  /r/demoDaisyQm9p  (Daisy — blocked state, expired Bordetella)');

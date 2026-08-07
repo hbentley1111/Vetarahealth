@@ -10,6 +10,8 @@ Full-stack pet health management platform — Node.js/Express backend, SQLite da
 
 **Platform**: session-based auth with bcrypt-hashed passwords, role-based access control (owner vs. provider), REST API, and a marketing landing page.
 
+**No-login verification links**: owners share an unguessable link (`/r/<token>`) with a groomer or boarder, who sees a fast server-rendered page with the pet's required-vaccine status — green "cleared", amber "due soon", or red "not cleared" — filtered to their business type, with a confirm button and an "accept anyway (logged)" override. No account or app install needed on the business side. Every view and confirmation is logged and visible to the owner, and links expire automatically. Try it after seeding: `/r/demoLuna8x2k` (cleared) and `/r/demoDaisyQm9p` (blocked).
+
 ## Tech Stack
 
 - **Backend**: Node.js + Express
@@ -58,6 +60,14 @@ The database is created automatically at `data/vetara.db` on first run.
 | PATCH | `/api/appointments/:id` | Update status (cancel / check-in / complete) |
 | GET/POST | `/api/reminders` | Care reminders |
 | PATCH | `/api/reminders/:id/done` | Complete a reminder |
+| GET | `/api/insurance` | Policies, claims, discount tiers |
+| GET/POST | `/api/posts` | Community feed |
+| POST | `/api/posts/:id/like` | Like a post |
+| GET/POST | `/api/slots` | Open-slot broadcasts (Smart Fill) |
+| POST | `/api/slots/:id/claim` | Claim an open slot |
+| POST | `/api/assistant` | AI assistant (grounded in your records) |
+| GET/POST/DELETE | `/api/shares` | Verification share links |
+| GET | `/r/:token` | Public no-login verification page |
 
 ## Pushing to GitHub
 

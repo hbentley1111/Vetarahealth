@@ -379,7 +379,11 @@ async function petsScreen() {
 }
 
 async function petDetailScreen() {
-  const p = await api('/pets/' + S.pet);
+  const [p, shares] = await Promise.all([
+    api('/pets/' + S.pet),
+    S.user.role === 'owner' ? api('/shares') : Promise.resolve([])
+  ]);
+  const myShares = shares.filter(s => s.pet_id === p.id && !s.expired);
   topbar(p.name, p.breed || p.species);
   const vaxRow = v => `<div class="kv"><div><div class="v" style="text-align:left">${esc(v.name)}</div>
     <div class="t3">Given ${fmtDate(v.given_on)} · Due ${fmtDate(v.due_on)}</div></div>
@@ -436,6 +440,23 @@ async function petDetailScreen() {
           <button class="btn btn-p btn-sm" style="flex:1" onclick="toast('Lost-pet mode armed — scans now alert you instantly')">Lost-Pet Mode</button>
         </div>
       </div>
+      ${S.user.role === 'owner' ? `
+      <h3 class="sec">Verification links <span class="seemore" onclick="openShareModal(${p.id})">+ New link</span></h3>
+      <div class="card">
+        <div class="t2" style="margin-bottom:${myShares.length ? '10px' : '0'}">Share a no-login link — a groomer or boarder sees ${esc(p.name)}'s required vaccine status in 5 seconds. Every view is logged.</div>
+        ${myShares.map(s => {
+          const views = s.log.filter(l => l.action === 'viewed').length;
+          const confirms = s.log.filter(l => l.action !== 'viewed').length;
+          return `<div class="rowitem">
+            <div class="gicon" style="background:var(--card2);border:1px solid var(--line2);width:34px;height:34px;color:var(--cyan)">${I('link', 14)}</div>
+            <div class="grow"><div class="t1" style="font-size:.8rem">${esc(s.purpose)}</div>
+            <div class="t3">Expires ${fmtDate(s.expires_at.slice(0, 10))} · ${views} view${views === 1 ? '' : 's'} · ${confirms} confirmation${confirms === 1 ? '' : 's'}</div></div>
+            <button class="btn btn-ghost btn-sm" onclick="copyShare('${esc(s.token)}')">Copy</button>
+            <button class="btn btn-ghost btn-sm" onclick="window.open('/r/${esc(s.token)}','_blank')">${I('eye', 12)}</button>
+            <button class="btn btn-danger btn-sm" onclick="revokeShare(${s.id})">${I('trash', 12)}</button>
+          </div>`;
+        }).join('')}
+      </div>` : ''}
       <h3 class="sec">Identity</h3>
       <div class="card">
         <div class="kv"><span class="k">Microchip</span><span class="v">${esc(p.microchip || '—')}</span></div>
@@ -1144,6 +1165,39 @@ async function claimSlot(e, slotId) {
     await api(`/slots/${slotId}/claim`, { method: 'POST', body: { petId: +$('m-pet').value } });
     closeModal(); toast('Slot claimed — appointment confirmed'); go('appts');
   } catch (err) { toast(err.message, true); }
+}
+
+function openShareModal(petId) {
+  modal(`<h3>New verification link</h3>
+  <div class="t2" style="margin-bottom:6px">The recipient sees only the vaccines required for their business type — no login, no account.</div>
+  <form class="field" onsubmit="createShare(event,${petId})">
+    <label>Share with</label>
+    <select id="m-purpose">${['Grooming', 'Boarding', 'Daycare', 'Dog park'].map(p => `<option>${p}</option>`).join('')}</select>
+    <label>Link valid for</label>
+    <select id="m-days"><option value="7">7 days</option><option value="1">24 hours</option><option value="30">30 days</option><option value="90">90 days</option></select>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-p grow" type="submit">${I('link', 15)} Create link</button>
+      <button class="btn btn-ghost" type="button" onclick="closeModal()">Cancel</button>
+    </div>
+  </form>`);
+}
+async function createShare(e, petId) {
+  e.preventDefault();
+  try {
+    const s = await api('/shares', { method: 'POST', body: { petId, purpose: $('m-purpose').value, days: +$('m-days').value } });
+    closeModal();
+    await copyShare(s.token);
+    render();
+  } catch (err) { toast(err.message, true); }
+}
+async function copyShare(token) {
+  const url = location.origin + '/r/' + token;
+  try { await navigator.clipboard.writeText(url); toast('Link copied — text or email it to the groomer'); }
+  catch { prompt('Copy this link:', url); }
+}
+async function revokeShare(id) {
+  try { await api('/shares/' + id, { method: 'DELETE' }); toast('Link revoked'); render(); }
+  catch (e) { toast(e.message, true); }
 }
 
 let reviewRating = 5;

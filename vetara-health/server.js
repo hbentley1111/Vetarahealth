@@ -27,6 +27,10 @@ app.use('/api/insurance', require('./src/routes/insurance'));
 app.use('/api/posts', require('./src/routes/posts'));
 app.use('/api/slots', require('./src/routes/slots'));
 app.use('/api/assistant', require('./src/routes/assistant'));
+app.use('/api/shares', require('./src/routes/shares'));
+
+// Public no-login verification pages (shared with groomers/boarders)
+app.use('/r', require('./src/routes/verify'));
 
 // Static frontend
 app.use(express.static(path.join(__dirname, 'public')));

@@ -122,6 +122,24 @@ function initDb() {
     created_at TEXT DEFAULT (datetime('now'))
   );
 
+  CREATE TABLE IF NOT EXISTS share_links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pet_id INTEGER NOT NULL REFERENCES pets(id) ON DELETE CASCADE,
+    token TEXT UNIQUE NOT NULL,
+    purpose TEXT NOT NULL DEFAULT 'Grooming',
+    expires_at TEXT NOT NULL,
+    revoked INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS share_access_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    share_id INTEGER NOT NULL REFERENCES share_links(id) ON DELETE CASCADE,
+    action TEXT NOT NULL CHECK(action IN ('viewed','confirmed','override')),
+    note TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
   CREATE TABLE IF NOT EXISTS open_slots (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     provider_id INTEGER NOT NULL REFERENCES providers(id) ON DELETE CASCADE,
