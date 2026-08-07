@@ -1,0 +1,21 @@
+{
+  "name": "vetara-health",
+  "version": "1.0.0",
+  "description": "Vetara Health — full-stack pet health management platform (Express + SQLite)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node src/seed.js"
+  },
+  "keywords": ["pets", "health", "veterinary"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0"
+  }
+}
